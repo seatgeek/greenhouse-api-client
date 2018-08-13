@@ -19,9 +19,9 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class GreenhouseClient(
-    hostname: String,
-    token: String,
-    timeout: Duration? = null
+        token: String,
+        hostname: String = "harvest.greenhouse.io",
+        timeout: Duration? = null
 ) {
     val methods: GreenhouseMethods
 
@@ -33,30 +33,30 @@ class GreenhouseClient(
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
         val okhttpBuilder = OkHttpClient.Builder()
-            .addInterceptor {
-                it.proceed(
-                    it.request().newBuilder()
-                        .addHeader("Authorization", Credentials.basic(token, null))
-                        .build()
-                )
-            }
-            .addInterceptor(loggingInterceptor)
+                .addInterceptor {
+                    it.proceed(
+                            it.request().newBuilder()
+                                    .addHeader("Authorization", Credentials.basic(token, ""))
+                                    .build()
+                    )
+                }
+                .addInterceptor(loggingInterceptor)
 
         if (timeout != null) {
             okhttpBuilder.readTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
         }
 
         val okHttpClient = okhttpBuilder
-            .build()
+                .build()
 
         val gson = GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ssX").create()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://${hostname}/v1/")
-            .client(okHttpClient)
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
+                .baseUrl("https://${hostname}/v1/")
+                .client(okHttpClient)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
 
         methods = GreenhouseMethods(retrofit.create(GreenhouseService::class.java))
     }
@@ -64,15 +64,15 @@ class GreenhouseClient(
     interface GreenhouseService {
         @GET("candidates")
         fun candidates(
-            @Query("per_page") perPage: Int?,
-            @Query("page") page: Int?,
-            @Query("created_before") createdBefore: String?,
-            @Query("created_after") createdAfter: String?,
-            @Query("updated_before") updatedBefore: String?,
-            @Query("updated_after") updatedAfter: String?,
-            @Query("job_id") jobId: Int?,
-            @Query("email") email: String?,
-            @Query("candidate_ids") candidateIds: List<Int>?
+                @Query("per_page") perPage: Int?,
+                @Query("page") page: Int?,
+                @Query("created_before") createdBefore: String?,
+                @Query("created_after") createdAfter: String?,
+                @Query("updated_before") updatedBefore: String?,
+                @Query("updated_after") updatedAfter: String?,
+                @Query("job_id") jobId: Int?,
+                @Query("email") email: String?,
+                @Query("candidate_ids") candidateIds: List<Int>?
         ): Single<List<GreenhouseCandidate>>
 
         /*
@@ -88,67 +88,67 @@ class GreenhouseClient(
          */
         @GET("jobs")
         fun jobs(
-            @Query("per_page") perPage: Int?,
-            @Query("page") page: Int?,
-            @Query("created_before") createdBefore: String?,
-            @Query("created_after") createdAfter: String?,
-            @Query("updated_before") updatedBefore: String?,
-            @Query("updated_after") updatedAfter: String?,
-            @Query("requisition_id") requisitionId: String?,
-            @Query("opening_id") openingId: Int?,
-            @Query("status") status: String?
+                @Query("per_page") perPage: Int?,
+                @Query("page") page: Int?,
+                @Query("created_before") createdBefore: String?,
+                @Query("created_after") createdAfter: String?,
+                @Query("updated_before") updatedBefore: String?,
+                @Query("updated_after") updatedAfter: String?,
+                @Query("requisition_id") requisitionId: String?,
+                @Query("opening_id") openingId: Int?,
+                @Query("status") status: String?
         ): Single<List<GreenhouseJob>>
     }
 
     class GreenhouseMethods(val service: GreenhouseService) {
         fun candidates(
-            perPage: Int? = null,
-            page: Int? = null,
-            createdBefore: Date? = null,
-            createdAfter: Date? = null,
-            updatedBefore: Date? = null,
-            updatedAfter: Date? = null,
-            jobId: Int? = null,
-            email: String? = null,
-            candidateIds: List<Int>? = null
+                perPage: Int? = null,
+                page: Int? = null,
+                createdBefore: Date? = null,
+                createdAfter: Date? = null,
+                updatedBefore: Date? = null,
+                updatedAfter: Date? = null,
+                jobId: Int? = null,
+                email: String? = null,
+                candidateIds: List<Int>? = null
         ): Observable<GreenhouseCandidate> {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
             return service.candidates(
-                perPage,
-                page,
-                createdBefore?.let { dateFormat.format(createdBefore) },
-                createdAfter?.let { dateFormat.format(createdAfter) },
-                updatedBefore?.let { dateFormat.format(updatedBefore) },
-                updatedAfter?.let { dateFormat.format(updatedAfter) },
-                jobId,
-                email,
-                candidateIds
+                    perPage,
+                    page,
+                    createdBefore?.let { dateFormat.format(createdBefore) },
+                    createdAfter?.let { dateFormat.format(createdAfter) },
+                    updatedBefore?.let { dateFormat.format(updatedBefore) },
+                    updatedAfter?.let { dateFormat.format(updatedAfter) },
+                    jobId,
+                    email,
+                    candidateIds
             ).flatMapObservable { Observable.fromIterable(it) }
 
         }
 
         fun jobs(
-            perPage: Int? = null,
-            page: Int? = null,
-            createdBefore: String? = null,
-            createdAfter: String? = null,
-            updatedBefore: String? = null,
-            updatedAfter: String? = null,
-            requisitionId: String? = null,
-            openingId: Int? = null,
-            status: Opening.Status? = null
+                perPage: Int? = null,
+                page: Int? = null,
+                createdBefore: String? = null,
+                createdAfter: String? = null,
+                updatedBefore: String? = null,
+                updatedAfter: String? = null,
+                requisitionId: String? = null,
+                openingId: Int? = null,
+                status: Opening.Status? = null
         ): Observable<GreenhouseJob> {
             return service.jobs(
-                perPage,
-                page,
-                createdBefore,
-                createdAfter,
-                updatedBefore,
-                updatedAfter,
-                requisitionId,
-                openingId,
-                status?.apiValue()
+                    perPage,
+                    page,
+                    createdBefore,
+                    createdAfter,
+                    updatedBefore,
+                    updatedAfter,
+                    requisitionId,
+                    openingId,
+                    status?.apiValue()
             ).flatMapObservable { Observable.fromIterable(it) }
         }
     }

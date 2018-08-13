@@ -16,9 +16,9 @@ import java.net.URL
 data class Attachment(
     val filename: String,
     val url: URL,
-    val type: AttachmentType
+    val type: Type
 ) {
-    enum class AttachmentType {
+    enum class Type {
         @SerializedName("ofer_packet")
         OFFER_PACKET,
         @SerializedName("admin_only")
