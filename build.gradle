@@ -18,8 +18,8 @@ buildscript {
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
-group = property("GROUP")
-version = "0.1.0-SNAPSHOT"
+group = 'com.seatgeek.greenhouse.api'
+version = '0.1.0-SNAPSHOT'
 
 compileKotlin {
     kotlinOptions {
