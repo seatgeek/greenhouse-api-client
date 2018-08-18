@@ -193,6 +193,7 @@ const val exampleJson = """{
         }
      }
   }"""
+
 data class GreenhouseCandidate(
         val id: Int,
         @SerializedName("first_name") val firstName: String?,
