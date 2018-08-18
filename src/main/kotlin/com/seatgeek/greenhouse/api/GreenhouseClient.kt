@@ -1,6 +1,7 @@
 package com.seatgeek.greenhouse.api
 
 import com.google.gson.GsonBuilder
+import com.seatgeek.greenhouse.api.model.ActivityFeed
 import com.seatgeek.greenhouse.api.model.GreenhouseCandidate
 import com.seatgeek.greenhouse.api.model.Opening
 import io.reactivex.Observable
@@ -12,6 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -98,6 +100,11 @@ class GreenhouseClient(
                 @Query("opening_id") openingId: Int?,
                 @Query("status") status: String?
         ): Single<List<GreenhouseJob>>
+
+        @GET("candidates/{id}/activity_feed")
+        fun activityFeed(
+            @Path("id") id: Int
+        ): Single<ActivityFeed>
     }
 
     class GreenhouseMethods(val service: GreenhouseService) {
@@ -150,6 +157,10 @@ class GreenhouseClient(
                     openingId,
                     status?.apiValue()
             ).flatMapObservable { Observable.fromIterable(it) }
+        }
+
+        fun activityFeed(id: Int): Single<ActivityFeed> {
+            return service.activityFeed(id)
         }
     }
 }
