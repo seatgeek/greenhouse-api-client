@@ -2,9 +2,9 @@ package com.seatgeek.greenhouse.api
 
 import com.google.gson.GsonBuilder
 import com.seatgeek.greenhouse.api.model.ActivityFeed
+import com.seatgeek.greenhouse.api.model.Application
 import com.seatgeek.greenhouse.api.model.GreenhouseCandidate
 import com.seatgeek.greenhouse.api.model.Opening
-import io.reactivex.Observable
 import io.reactivex.Single
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
@@ -77,6 +77,9 @@ class GreenhouseClient(
                 @Query("candidate_ids") candidateIds: List<Int>?
         ): Single<List<GreenhouseCandidate>>
 
+        @GET("candidates/{id}")
+        fun candidate(@Path("id") candidateId: Int): Single<GreenhouseCandidate>
+
         /*
         per_page	Return up to this number of objects per response. Must be an integer between 1 and 500. Defaults to 100.
         page	A cursor for use in pagination. Returns the n-th chunk of per_page objects.
@@ -101,13 +104,26 @@ class GreenhouseClient(
                 @Query("status") status: String?
         ): Single<List<GreenhouseJob>>
 
+        @GET("applications")
+        fun applications(
+                @Query("per_page") perPage: Int?,
+                @Query("page") page: Int?,
+                @Query("created_before") createdBefore: String?,
+                @Query("created_after") createdAfter: String?,
+                @Query("last_activity_after") lastActivityAfter: String?,
+                @Query("job_id") jobId: Int?,
+                @Query("status") status: Application.Status?
+        ): Single<List<Application>>
+
         @GET("candidates/{id}/activity_feed")
         fun activityFeed(
-            @Path("id") id: Int
+                @Path("id") id: Int
         ): Single<ActivityFeed>
     }
 
     class GreenhouseMethods(val service: GreenhouseService) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
         fun candidates(
                 perPage: Int? = null,
                 page: Int? = null,
@@ -118,21 +134,46 @@ class GreenhouseClient(
                 jobId: Int? = null,
                 email: String? = null,
                 candidateIds: List<Int>? = null
-        ): Observable<GreenhouseCandidate> {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-
+        ): Single<List<GreenhouseCandidate>> {
             return service.candidates(
                     perPage,
                     page,
-                    createdBefore?.let { dateFormat.format(createdBefore) },
-                    createdAfter?.let { dateFormat.format(createdAfter) },
-                    updatedBefore?.let { dateFormat.format(updatedBefore) },
-                    updatedAfter?.let { dateFormat.format(updatedAfter) },
+                    createdBefore?.let { dateFormat.format(it) },
+                    createdAfter?.let { dateFormat.format(it) },
+                    updatedBefore?.let { dateFormat.format(it) },
+                    updatedAfter?.let { dateFormat.format(it) },
                     jobId,
                     email,
                     candidateIds
-            ).flatMapObservable { Observable.fromIterable(it) }
+            )
+        }
 
+        fun candidate(
+                candidateId: Int
+        ): Single<GreenhouseCandidate> {
+            return service.candidate(
+                    candidateId
+            )
+        }
+
+        fun applications(
+                perPage: Int? = null,
+                page: Int? = null,
+                createdBefore: String? = null,
+                createdAfter: String? = null,
+                lastActivityAfter: String? = null,
+                jobId: Int? = null,
+                status: Application.Status? = null
+        ): Single<List<Application>> {
+            return service.applications(
+                    perPage,
+                    page,
+                    createdBefore?.let { dateFormat.format(it) },
+                    createdAfter?.let { dateFormat.format(it) },
+                    lastActivityAfter?.let { dateFormat.format(it) },
+                    jobId,
+                    status
+            )
         }
 
         fun jobs(
@@ -145,7 +186,7 @@ class GreenhouseClient(
                 requisitionId: String? = null,
                 openingId: Int? = null,
                 status: Opening.Status? = null
-        ): Observable<GreenhouseJob> {
+        ): Single<List<GreenhouseJob>> {
             return service.jobs(
                     perPage,
                     page,
@@ -156,11 +197,11 @@ class GreenhouseClient(
                     requisitionId,
                     openingId,
                     status?.apiValue()
-            ).flatMapObservable { Observable.fromIterable(it) }
+            )
         }
 
-        fun activityFeed(id: Int): Single<ActivityFeed> {
-            return service.activityFeed(id)
+        fun activityFeed(candidateId: Int): Single<ActivityFeed> {
+            return service.activityFeed(candidateId)
         }
     }
 }

@@ -97,6 +97,8 @@ data class Application(
     enum class Status {
         @SerializedName("active")
         ACTIVE,
+        @SerializedName("converted")
+        CONVERTED,
         @SerializedName("hired")
         HIRED,
         @SerializedName("rejected")
